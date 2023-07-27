@@ -1,7 +1,8 @@
 
-export function Categories({ categoryArr, handler }) {
+export function Categories({ categoryArr, handler, category }) {
     return (
         <div className='container'>
+            <h2>Active Category: {category}</h2>
             {categoryArr.map((categ, categInd) => {
                 return (
                     <button

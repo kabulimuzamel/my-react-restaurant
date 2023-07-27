@@ -3,7 +3,8 @@ import { Categories } from "./Categories";
 import { MealsOpt } from "./MealsOpt";
 import { ActiveIngredients } from "./ActiveIngredients";
 import { AllIngredients } from "./AllIngredients";
-const { displayMeals, displayCategory } = require('../utils/promises');
+import { IngredientScale } from "./IngredientScale";
+const { displayMeals, displayCategory, allIng } = require('../utils/promises');
 const { checkForActiveMeals } = require('../utils/logicFunctions');
 let stateObject = {};
 
@@ -15,7 +16,6 @@ export function StaticMeal() {
     const [activeIngredients, setActiveIngredient] = useState([]);
     const [activeMeal, setActiveMeal] = useState([]);
 
-
     // This part displays categories
 
     useEffect(() => {
@@ -26,19 +26,30 @@ export function StaticMeal() {
 
     useEffect(() => {
         displayMeals(selectedCategory, setMeals, stateObject, setAllIngredients);
+
     }, [selectedCategory]);
 
     
     function selectCategoryHandler(event) {
-        stateObject = {};
-        setAllIngredients([]);
-        setActiveIngredient([]);
-        setSelectedCategory(event.target.value);
+        if(event.target.value === selectedCategory) {
+            alert(`You have already selected ${event.target.value}`)
+        } else {
+            allIng.length = 0;
+            stateObject = {};
+            setAllIngredients([]);
+            setActiveIngredient([]);
+            setMeals([]);
+            setActiveMeal([]);
+            setSelectedCategory(event.target.value)
+        }
     }
 
     function selectActiveIngredientHandler(event) {
         if(!activeIngredients.includes(event.target.value)) {
             setActiveIngredient(prev => [...prev, event.target.value]);
+            setAllIngredients(prev => prev.filter((ing) => {
+                return ing !== event.target.value;
+            }))
             const actIngArr = [...activeIngredients, event.target.value];
             const actMealArr = checkForActiveMeals(stateObject, actIngArr);
             setActiveMeal(actMealArr);
@@ -51,17 +62,19 @@ export function StaticMeal() {
             return ing !== toRemoveIng;
         });
         setActiveIngredient(filteredIngArr);
+        setAllIngredients((prev) => [...prev, toRemoveIng])
         const actMealArr = checkForActiveMeals(stateObject, filteredIngArr);
         setActiveMeal(actMealArr);
     } 
 
     return (
         <div>
-            <Categories categoryArr={categories} handler={selectCategoryHandler} />
+            <Categories categoryArr={categories} handler={selectCategoryHandler} category={selectedCategory}/>
+            <IngredientScale />
             <div className="d-flex justify-content-between container">
-                <MealsOpt mealArr={meals} />
+                <MealsOpt mealArr={meals}  activeMeal={activeMeal} />
                 <ActiveIngredients actIngArr={activeIngredients} handler={removeActIngHandler} />
-                <AllIngredients ingArr={ingredients} handler={selectActiveIngredientHandler} />
+                <AllIngredients ingArr={ingredients} handler={selectActiveIngredientHandler}/>
             </div>
         </div>
     )
